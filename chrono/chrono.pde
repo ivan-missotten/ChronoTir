@@ -18,10 +18,12 @@
 #define ORANGE 1
 #define GREEN 2
 
-#define A 0
-#define B 1
-#define C 2
-#define D 3
+#define ABC 0
+#define CAB 1
+#define BCA 2
+
+#define ABCD_v 0
+#define CDAB_v 1
 
 #define ABC 0
 #define ABCD 1
@@ -41,13 +43,12 @@
 #define MODE_RUN 1
 #define MODE_STOP 2
 
-const unsigned char lineChar [4] = {'A', 'B', 'C', 'D'};
-
-unsigned char ligne;
-unsigned char typeLigne;
-unsigned char couleur;
-unsigned long temps;
-unsigned char mode;
+unsigned char ligne; // Line indicator
+unsigned char typeLigne; // ABC or ABCD
+unsigned char couleur; // RED, ORANGE, GREEN
+unsigned long temps; // Remaining time
+unsigned char mode; // Current state
+unsigned char nVolee; // Flight number
 
 LiquidCrystal lcd (RS, EN, D7, D6, D5, D4);
 
@@ -59,8 +60,34 @@ void setCouleur(unsigned char color)
 // Update Line number on the LCD
 void LCDUpdateLine()
 {
-  lcd.setCursor (15, 0);
-  lcd.print ((char)lineChar[ligne]);
+   if (typeLigne == ABC) {
+    lcd.setCursor (13, 0);
+    switch (ligne) {
+      case ABC:
+        lcd.print ("ABC");
+        break;
+
+      case CAB:
+        lcd.print ("CAB");
+        break;
+
+      case BCA:
+        lcd.print ("BCA");
+        break;
+    }
+  }
+  else if (typeLigne == ABCD) {
+    lcd.setCursor (12, 0);
+    switch (ligne) {
+      case ABCD_v:
+        lcd.print ("ABCD");
+        break;
+
+      case CDAB_v:
+        lcd.print ("CDAB");
+        break;
+    }
+  }
 }
 
 // Update time on LCD
@@ -89,7 +116,6 @@ void LCDUpdateTime()
   {
     lcd.print ((int)secondes);
   }
- 
 }
 
 // Update color status on LCD
@@ -108,6 +134,14 @@ void LCDUpdateCouleur()
        lcd.print ("Vert  ");
        break;     
    }
+}
+
+// Update flight number
+void LCDUpdateFl()
+{
+  lcd.setCursor (-4, 2);
+  lcd.print ("Volée : ");
+  lcd.print (nVolee);
 }
 
 // Show context menu
@@ -145,7 +179,8 @@ void setup()
 {
   typeLigne = ABC;
   couleur = RED;
-  ligne = A;
+  ligne = ABC;
+  nVolee = 1;
 
   pinMode (D7, OUTPUT);
   pinMode (D6, OUTPUT);
@@ -163,6 +198,7 @@ void setup()
   LCDUpdateLine();
   LCDUpdateTime();
   LCDUpdateCouleur();
+  LCDUpdateFl();
   LCDUpdateMenu();
 }
 
@@ -230,6 +266,7 @@ void loop()
   LCDUpdateLine();
   LCDUpdateTime();
   LCDUpdateCouleur();
+  LCDUpdateFl();
   LCDUpdateMenu();
 
   prvBtn0 = btn0;
